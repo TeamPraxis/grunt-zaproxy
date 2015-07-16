@@ -396,7 +396,7 @@ module.exports = function (grunt) {
 
     var alerts = grunt.config.get('zap_alert.alerts') || [];
 
-    var filteredAlerts = alerts.filter(function(alert){
+    var filteredAlerts = alerts.filter(function (alert) {
       return options.risks.indexOf(alert.risk) > -1;
     });
 
