@@ -366,18 +366,17 @@ module.exports = function (grunt) {
       if (options.html) {
         var xslt;
         try {
-          xslt = require('node_xslt');
+          xslt = require('libxslt');
         } catch (e) {
-          grunt.log.error('Unable to generate HTML report because node_xslt is not installed. Make sure that you have the required dependencies for node_xslt: ' + JSON.stringify(e, null, 2));
+          grunt.log.error('Unable to generate HTML report because libxslt is not installed. Make sure that you have the required dependencies for libxslt: ' + JSON.stringify(e, null, 2));
           done(false);
           return;
         }
 
         var htmlFilename = path.join(options.dir, 'report.html');
         grunt.log.write('Writing ' + htmlFilename + ': ');
-        var stylesheet = xslt.readXsltFile(path.join(__dirname, '../report.html.xsl'));
-        var document = xslt.readXmlString(data);
-        grunt.file.write(htmlFilename, xslt.transform(stylesheet, document, []));
+        var stylesheet = xslt.parse(path.join(__dirname, '../report.html.xsl'));
+        grunt.file.write(htmlFilename, stylesheet.apply(data));
         grunt.log.ok();
         done();
       } else {
