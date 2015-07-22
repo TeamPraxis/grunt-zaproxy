@@ -374,9 +374,18 @@ module.exports = function (grunt) {
         }
 
         var htmlFilename = path.join(options.dir, 'report.html');
-        grunt.log.write('Writing ' + htmlFilename + ': ');
+        grunt.log.write('Parsing data...');
         var stylesheet = xslt.parse(path.join(__dirname, '../report.html.xsl'));
-        grunt.file.write(htmlFilename, stylesheet.apply(data));
+        var result = stylesheet.apply(data, function (err, result) {
+        // result is now a libxmljs document containing the result of the transformation
+          if (err) {
+            grunt.fail.warn('XSLT Error: ' + JSON.stringify(err, null, 2));
+            done();
+            return;
+          }
+        });
+        grunt.log.write('Writing ' + htmlFilename + ': ');
+        grunt.file.write(htmlFilename, result);
         grunt.log.ok();
         done();
       } else {
