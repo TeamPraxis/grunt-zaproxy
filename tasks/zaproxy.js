@@ -366,18 +366,26 @@ module.exports = function (grunt) {
       if (options.html) {
         var xslt;
         try {
-          xslt = require('node_xslt');
+          xslt = require('libxslt');
         } catch (e) {
-          grunt.log.error('Unable to generate HTML report because node_xslt is not installed. Make sure that you have the required dependencies for node_xslt: ' + JSON.stringify(e, null, 2));
+          grunt.log.error('Unable to generate HTML report because libxslt is not installed. Make sure that you have the required dependencies for libxslt: ' + JSON.stringify(e, null, 2));
           done(false);
           return;
         }
 
         var htmlFilename = path.join(options.dir, 'report.html');
+        grunt.log.write('Parsing data...');
+        var stylesheet = xslt.parse(path.join(__dirname, '../report.html.xsl'));
+        var result = stylesheet.apply(data, function (err, result) {
+        // result is now a libxmljs document containing the result of the transformation
+          if (err) {
+            grunt.fail.warn('XSLT Error: ' + JSON.stringify(err, null, 2));
+            done();
+            return;
+          }
+        });
         grunt.log.write('Writing ' + htmlFilename + ': ');
-        var stylesheet = xslt.readXsltFile(path.join(__dirname, '../report.html.xsl'));
-        var document = xslt.readXmlString(data);
-        grunt.file.write(htmlFilename, xslt.transform(stylesheet, document, []));
+        grunt.file.write(htmlFilename, result);
         grunt.log.ok();
         done();
       } else {
@@ -397,7 +405,7 @@ module.exports = function (grunt) {
 
     var alerts = grunt.config.get('zap_alert.alerts') || [];
 
-    var filteredAlerts = alerts.filter(function(alert){
+    var filteredAlerts = alerts.filter(function (alert) {
       return options.risks.indexOf(alert.risk) > -1;
     });
 
